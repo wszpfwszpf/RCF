@@ -1,0 +1,77 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.so
+*.pyd
+
+# Virtual environment
+venv/
+.venv/
+env/
+conda-env/
+*.egg-info/
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Experiment outputs
+# =========================
+logs/
+runs/
+outputs/
+results/
+figures/
+plots/
+
+# =========================
+# Event data & intermediate files
+# =========================
+data/
+datasets/
+*.aedat
+*.aedat4
+*.npz
+*.npy
+
+# If you want to keep small demo data, use:
+# !data/demo/
+
+# =========================
+# Cached scores / debug
+# =========================
+*score1*
+*score2*
+*confidence*
+*cache*
+*.tmp
+
+# =========================
+# LaTeX / paper drafts (if any)
+# =========================
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+
+# =========================
+# Misc
+# =========================
+checkpoint/
+checkpoints/
