@@ -79,14 +79,14 @@ This allows fast threshold sweeping without recomputation.
 
 ## 5. Project Structure (Planned)
 
-rcf/
-├── core/
-├── utils/
-├── experiments/
-├── visualization/
-├── configs/
-├── README.md
-└── .gitignore
+    rcf/
+    ├── core/
+    ├── utils/
+    ├── experiments/
+    ├── visualization/
+    ├── configs/
+    ├── README.md
+    └── .gitignore
 
 ---
 
