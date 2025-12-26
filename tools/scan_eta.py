@@ -266,23 +266,6 @@ def main():
                         resolution=RESOLUTION
                     )
 
-                # if SAVE_FRAMES:
-                #     frame_dir = out_dir / "frames" / f.stem
-                #     ensure_dir(frame_dir)
-                #     # If you don't overwrite, skip if some frames already exist
-                #     # (simple check: one expected name)
-                #     probe = frame_dir / f"{f.stem}__eta{eta:.2f}__frame000.png"
-                #     if probe.exists() and not OVERWRITE:
-                #         pass
-                #     else:
-                #         render_frames_33ms(
-                #             t=t[mask], x=x[mask], y=y[mask], p=p[mask],
-                #             out_dir=frame_dir,
-                #             base_name=f.stem,
-                #             eta=float(eta),
-                #             resolution=RESOLUTION
-                #         )
-
             ok += 1
             if VERBOSE:
                 print(f"[OK] scanned: {f.name} | N={N}")
