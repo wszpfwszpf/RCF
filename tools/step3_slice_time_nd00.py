@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# tools/step3_slice_nd00.py
+# tools/step3_slice_time_nd00.py
 from __future__ import annotations
 
 from pathlib import Path
 
-from rcf_fast.stream_slice import run_time_slicer
+from rcf_fast.timeinterval_slice import run_time_slicer
 
 
 # -------------------------

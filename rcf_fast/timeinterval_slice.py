@@ -1,4 +1,4 @@
-# rcf_fast/stream_slice.py
+# rcf_fast/timeinterval_slice.py
 from __future__ import annotations
 
 from dataclasses import dataclass
