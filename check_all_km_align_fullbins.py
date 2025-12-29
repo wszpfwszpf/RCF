@@ -229,9 +229,9 @@ if __name__ == "__main__":
     # 你要兼容 night：把 split 改成 'night' 再跑一次即可
     # 注意：确保 data/emlb/night 和对应 keepmask 已准备好（命名规则一致）
     check_all(
-        split="day",
+        split="night",
         emlb_root="data/emlb",
         km_dir="data/emlb_rcf_verify/keepmask",
-        bin_us=10000,
+        bin_us=33000,
         verbose_fail_only=True
     )

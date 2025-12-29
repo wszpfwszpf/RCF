@@ -23,10 +23,10 @@ from rcf_fast.rcf_core import rcf_process_bin
 # ============================================================
 # User configuration (edit here)
 # ============================================================
-DATA_ROOT = r"C:\Users\93084\Desktop\自己论文写作\2.降噪\RCF\data\emlb\day"
-ND_FILTER = "ND00"                      # ND00 / ND04 / ND16 / ND64
-BIN_MS = 10                             # 10ms slicing for RCF
-
+DATA_ROOT = r"C:\Users\93084\Desktop\自己论文写作\2.降噪\RCF\data\emlb\night"  # day / night
+ND_FILTER = "ND64"                      # ND00 / ND04 / ND16 / ND64
+BIN_MS = 33                             # 10ms slicing for RCF
+tag='night'
 # If you want a quick dry-run:
 MAX_BINS_PER_FILE = 0                   # 0 = full file
 
@@ -69,7 +69,7 @@ def main():
     n_eta = len(eta_list)
 
     # One global CSV for this ND
-    out_csv = os.path.join(CSV_DIR, f"rcf_profile_day_{ND_FILTER.lower()}.csv")
+    out_csv = os.path.join(CSV_DIR, f"rcf_profile_{tag}_{ND_FILTER.lower()}.csv")
     header = ["scene", "file", "bin_idx", "n_events", "time_ms"] + [f"keep_rate_eta_{e:.2f}" for e in eta_list]
 
     with open(out_csv, "w", newline="") as fcsv:

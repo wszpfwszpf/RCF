@@ -138,43 +138,6 @@ def compute_score1_ts(t, x, y, state, cfg):
         ts_map[yi, xi] = ti
     return score1
 
-# def compute_score1_ts(
-#     t: np.ndarray,
-#     x: np.ndarray,
-#     y: np.ndarray,
-#     state: RCFState,
-#     cfg: RCFComputeConfig,
-# ) -> np.ndarray:
-#     ts_map = state.ts.last_ts
-#     H, W = ts_map.shape
-#     r = cfg.radius
-#     T = float(cfg.T_us)
-#     Ksat = float(cfg.K_sat)
-#
-#     score1 = np.zeros_like(t, dtype=np.float32)
-#
-#     for i in range(len(t)):
-#         xi, yi, ti = int(x[i]), int(y[i]), float(t[i])
-#         s = 0.0
-#
-#         for dy in range(-r, r + 1):
-#             yy = yi + dy
-#             if yy < 0 or yy >= H:
-#                 continue
-#             for dx in range(-r, r + 1):
-#                 xx = xi + dx
-#                 if xx < 0 or xx >= W:
-#                     continue
-#                 dt = ti - ts_map[yy, xx]
-#                 if 0.0 < dt <= T:
-#                     s += (1.0 - dt / T)
-#
-#         s = min(1.0, s / Ksat)
-#         score1[i] = s
-#         ts_map[yi, xi] = ti
-#
-#     return score1
-
 
 # -------------------------------------------------
 # Block statistics
