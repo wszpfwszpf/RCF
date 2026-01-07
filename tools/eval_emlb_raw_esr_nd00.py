@@ -18,8 +18,8 @@ from rcf_fast.esr_core import (
 # PyCharm one-click config
 # =============================================================================
 EMLB_ROOT = r"C:\Users\93084\Desktop\自己论文写作\2.降噪\RCF\data\emlb"
-SUBSET = "night"  # "day" or "night"
-ND_FILTER = "ND64"  # e.g. ND00 / ND16 / ND64
+SUBSET = "dya"  # "day" or "night"
+ND_FILTER = "ND00"  # e.g. ND00 / ND16 / ND64
 
 N_PER_PACKET = DEFAULT_N_PACKET
 RESOLUTION = (SENSOR_W, SENSOR_H)

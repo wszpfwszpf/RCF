@@ -19,8 +19,8 @@ SENSOR_W = 346
 SENSOR_H = 260
 
 EMLB_ROOT = Path("data/emlb")
-KM_DIR = Path("data/emlb_rcf_verify/keepmask")
-OUT_DIR = Path("outputs/step5_compare_csv")
+KM_DIR = Path("data/emlb_rcfv2_verify/keepmask")
+OUT_DIR = Path("outputs/step5_comparev2_csv")
 OUT_CSV = OUT_DIR / f"compare_mesr_v1_{SPLIT}_{TARGET_ND.lower()}_rcf_vs_random.csv"
 
 KEEP_IS_ONE = True

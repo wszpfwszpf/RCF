@@ -20,8 +20,8 @@ SENSOR_W = 346
 SENSOR_H = 260
 
 EMLB_ROOT = Path("data/emlb")                        # 原始 aedat4 根目录
-KM_DIR = Path("data/emlb_rcf_verify/keepmask")       # keepmask npz 目录
-OUT_DIR = Path("outputs/step5_mesr_csv")             # 输出目录
+KM_DIR = Path("data/emlb_rcfv2_verify/keepmask")       # keepmask npz 目录
+OUT_DIR = Path("outputs/step5_mesr_csv_v2")             # 输出目录
 OUT_CSV = OUT_DIR / f"mesr_v1_{SPLIT}_{TARGET_ND.lower()}_6eta.csv"
 
 # keepmask 语义：1=keep（你已确认）
