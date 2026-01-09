@@ -28,11 +28,11 @@ rcParams["font.family"] = "Times New Roman"
 # ------------------------------- #
 # 配置：路径与时间窗（你已写在文件里）
 # ------------------------------- #
-DAT_PATH = r"data/DV/Off_set3_trail5.dat"
-KEEPMASK_NPZ_PATH = r"data/DV_rcf_full/Off_set3_trail5_keepmask_10ms.npz"
+# DAT_PATH = r"data/DV/Off_set3_trail5.dat"
+# KEEPMASK_NPZ_PATH = r"data/DV_rcf_full/Off_set3_trail5_keepmask_10ms.npz"
 
-# DAT_PATH = r"data/DV/On_set2_trail2.dat"
-# KEEPMASK_NPZ_PATH = r"data/DV_rcf_full/On_set2_trail2_keepmask_10ms.npz"
+DAT_PATH = r"data/DV/On_set2_trail2.dat"
+KEEPMASK_NPZ_PATH = r"data/DV_rcf_full/On_set2_trail2_keepmask_10ms.npz"
 
 T_START_S = 1.7
 T_END_S = 3.7
@@ -221,7 +221,7 @@ def main():
     plot_event_2d_green(
         ev_removed,
         y_aix=Y_AIX_FOR_PLOT,
-        title="η=0.15 removed",
+        title="η=0.3 removed",
         t0_us=t_start_us,
         xlim=(0, 2),
         ylim=(ROI_X_MIN, ROI_X_MAX),

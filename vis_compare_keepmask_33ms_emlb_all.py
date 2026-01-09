@@ -1,3 +1,15 @@
+# tools/vis_compare_keepmask_33ms_emlb_all.py
+# 日期：2026-01-08
+# 中文说明：
+# 基于 vis_compare_keepmask_33ms_pycharm.py 改写：
+# - 原来：只处理单个 AEDAT4_PATH，输出到固定 OUT_DIR
+# - 现在：批量处理 data/emlb 下所有 .aedat4
+# - 命名规则：
+#   输入: data/emlb/<split>/<scene>/<stem>.aedat4
+#   输出: data/emlb_vis_all/<split>/<scene>/<stem>/（其余子目录结构保持不变）
+#
+# 其余逻辑：不改动（读取事件、查找 keepmask、自动裁剪到最小长度、33ms 渲染、拼接1x5等）
+
 import os
 import glob
 from pathlib import Path
@@ -8,33 +20,35 @@ import numpy as np
 # 0) 配置区（PyCharm 一键运行只改这里）
 # ============================================================
 
-# 输入 AEDAT4 文件（单个文件）
-AEDAT4_PATH = r"data/emlb/day/Ferriswheel/Ferriswheel-ND04-2.aedat4"
+# E-MLB 数据根目录（会递归扫描所有 .aedat4）
+EMLB_ROOT = r"data/emlb"
+
+# 输出根目录（会按 split/scene/stem 自动创建）
+OUT_ROOT = r"data/emlb_vis_all"
 
 # 四种方法 keepmask 根目录（支持递归搜索）
 KEEP_DWF_ROOT    = r"data/emlb_dwf_verify/keepmask"
 KEEP_TS_ROOT     = r"data/emlb_ts_verify/keepmask"
-KEEP_BAF_ROOT     = r"data/emlb_baf_verify/keepmask"
+KEEP_BAF_ROOT    = r"data/emlb_baf_verify/keepmask"
 KEEP_YNOISE_ROOT = r"data/emlb_ynoise_verify/keepmask"
 KEEP_KNOISE_ROOT = r"data/emlb_knoise_verify/keepmask"
 KEEP_RCF_ROOT    = r"data/emlb_rcfv2_verify/keepmask"
-# KEEP_RCF_ROOT    = r"data/emlb_rcf_verify/keepmask"
+# KEEP_RCF_ROOT  = r"data/emlb_rcf_verify/keepmask"
 
-# 输出目录（会在里面创建 raw/dwf/ts/ynoise/rcf/pinjie）
-OUT_DIR = r"baselines/vis_compare3"
 # RCF 选择的 eta
-RCF_ETA = 0.05
+RCF_ETA = 0.15
 RCF_ETA_LIST = [0.05, 0.10, 0.15, 0.20, 0.25, 0.30]  # 如你存盘顺序不同，就改这里
-# [0.2,0.3,0.4,0.5,0.6,0.7]
+
 # 传感器分辨率（E-MLB 常见为 DAVIS346）
 SENSOR_W = 346
 SENSOR_H = 260
 
-# 可视化帧设置：33ms × 30帧 ≈ 1秒
+# 可视化帧设置：33ms × N_FRAMES
 DT_US = 33_000
 N_FRAMES = 60
 
-
+# 只跑某些 split（None 表示全部）
+ONLY_SPLITS = None  # 例如 ["day"] 或 ["night"]
 
 
 # ============================================================
@@ -276,7 +290,6 @@ def render_event_frame_png(x, y, p, W, H, out_path):
     imwrite(out_path, img)
 
 
-
 def stitch_1x5_with_label(
     paths_in_order,
     labels,
@@ -289,7 +302,6 @@ def stitch_1x5_with_label(
     Stitch 5 images into 1x5 with:
       - black border around each sub-image
       - label text on top (Times New Roman)
-    Order: raw, ts, ynoise, dwf, rcf
     """
     from PIL import Image, ImageDraw, ImageFont
 
@@ -323,38 +335,53 @@ def stitch_1x5_with_label(
         x0 = i * (W + 2 * border_px)
         y0 = 0
 
-        # --- draw border ---
+        # border
         draw.rectangle(
-            [
-                x0,
-                y0,
-                x0 + W + 2 * border_px - 1,
-                H_total - 1,
-            ],
+            [x0, y0, x0 + W + 2 * border_px - 1, H_total - 1],
             outline=(0, 0, 0),
             width=border_px,
         )
 
-        # --- draw label ---
+        # label
         text_bbox = draw.textbbox((0, 0), label, font=font)
         text_w = text_bbox[2] - text_bbox[0]
         text_x = x0 + (W + 2 * border_px - text_w) // 2
         text_y = (label_height - font_size) // 2
-
         draw.text((text_x, text_y), label, fill=(0, 0, 0), font=font)
 
-        # --- paste image ---
-        canvas.paste(
-            img,
-            (x0 + border_px, label_height + border_px)
-        )
+        # paste image
+        canvas.paste(img, (x0 + border_px, label_height + border_px))
 
     canvas.save(out_path)
 
+
 # ============================================================
-# 4) 主流程（自动裁剪到最小长度 + pinjie）
+# 4) 输出路径规则：data/emlb/<split>/<scene>/<stem>.aedat4
+#    -> data/emlb_vis_all/<split>/<scene>/<stem>/
 # ============================================================
-def run():
+def build_out_dir_for_aedat4(aedat4_path: str, emlb_root: str, out_root: str) -> str:
+    aed = Path(aedat4_path)
+    emlb_root = Path(emlb_root)
+
+    rel = aed.relative_to(emlb_root)  # split/scene/file.aedat4
+    parts = rel.parts
+    if len(parts) < 3:
+        raise ValueError(f"Unexpected E-MLB path structure: {aedat4_path}")
+
+    split = parts[0]
+    scene = parts[1]
+    stem = aed.stem
+
+    out_dir = Path(out_root) / split / scene / stem
+    return str(out_dir)
+
+
+# ============================================================
+# 5) 处理单个文件（原 run() 主体基本原样挪进来）
+# ============================================================
+def process_one_file(aedat4_path: str):
+    OUT_DIR = build_out_dir_for_aedat4(aedat4_path, EMLB_ROOT, OUT_ROOT)
+
     # Output folders
     dir_raw = os.path.join(OUT_DIR, "raw")
     dir_dwf = os.path.join(OUT_DIR, "dwf")
@@ -366,26 +393,25 @@ def run():
         ensure_dir(d)
 
     # Load events
-    t_us, x, y, p = read_aedat4_events(AEDAT4_PATH)
+    t_us, x, y, p = read_aedat4_events(aedat4_path)
     if t_us.size == 0:
-        raise RuntimeError("Empty event stream from AEDAT4.")
+        print(f"[SKIP] Empty event stream: {aedat4_path}")
+        return
 
     # Normalize time to start at 0 (microseconds)
     t_us = t_us - t_us.min()
 
     # Locate keepmasks by AEDAT4 stem
-    km_dwf_path = find_keepmask_file(KEEP_DWF_ROOT, AEDAT4_PATH)
-    km_ts_path  = find_keepmask_file(KEEP_TS_ROOT, AEDAT4_PATH)
-    km_yn_path  = find_keepmask_file(KEEP_YNOISE_ROOT, AEDAT4_PATH)
-    km_rcf_path = find_keepmask_file(KEEP_RCF_ROOT, AEDAT4_PATH)
-    # km_yn_path = find_keepmask_file(KEEP_KNOISE_ROOT, AEDAT4_PATH)
-    # km_ts_path = find_keepmask_file(KEEP_BAF_ROOT, AEDAT4_PATH)
+    km_dwf_path = find_keepmask_file(KEEP_DWF_ROOT, aedat4_path)
+    km_rcf_path = find_keepmask_file(KEEP_RCF_ROOT, aedat4_path)
+
+    # 这里保持你原来的“映射”：TS 用 BAF，YNoise 用 KNoise（标签也保持一致）
+    km_yn_path = find_keepmask_file(KEEP_KNOISE_ROOT, aedat4_path)
+    km_ts_path = find_keepmask_file(KEEP_BAF_ROOT, aedat4_path)
 
     km_dwf = load_keepmask(km_dwf_path).reshape(-1)
     km_ts  = load_keepmask(km_ts_path).reshape(-1)
     km_yn  = load_keepmask(km_yn_path).reshape(-1)
-    # km_knoise = load_keepmask(km_knoise_path).reshape(-1)
-    # km_baf = load_keepmask(km_baf_path).reshape(-1)
 
     km_rcf_raw = load_keepmask(km_rcf_path)
     km_rcf = pick_rcf_eta_column(km_rcf_raw, eta=RCF_ETA, eta_list=RCF_ETA_LIST).reshape(-1)
@@ -393,18 +419,8 @@ def run():
     # ---------- Auto-crop to min length ----------
     N_min = min(t_us.size, km_dwf.size, km_ts.size, km_yn.size, km_rcf.size)
     if N_min <= 0:
-        raise RuntimeError("After aligning, N_min <= 0. Check inputs.")
-
-    if N_min != t_us.size:
-        print(f"[WARN] events length {t_us.size} -> {N_min} (cropped)")
-    if N_min != km_dwf.size:
-        print(f"[WARN] DWF keepmask length {km_dwf.size} -> {N_min} (cropped)")
-    if N_min != km_ts.size:
-        print(f"[WARN] TS keepmask length {km_ts.size} -> {N_min} (cropped)")
-    if N_min != km_yn.size:
-        print(f"[WARN] YNoise keepmask length {km_yn.size} -> {N_min} (cropped)")
-    if N_min != km_rcf.size:
-        print(f"[WARN] RCF keepmask length {km_rcf.size} -> {N_min} (cropped)")
+        print(f"[SKIP] N_min<=0 after align: {aedat4_path}")
+        return
 
     t_us = t_us[:N_min]
     x = x[:N_min]
@@ -433,12 +449,12 @@ def run():
         path_raw = os.path.join(dir_raw, f"frame_{i:03d}.png")
         render_event_frame_png(x[idx], y[idx], p[idx], SENSOR_W, SENSOR_H, path_raw)
 
-        # ts
+        # ts (BAF)
         idx_ts = idx & keep_ts
         path_ts = os.path.join(dir_ts, f"frame_{i:03d}.png")
         render_event_frame_png(x[idx_ts], y[idx_ts], p[idx_ts], SENSOR_W, SENSOR_H, path_ts)
 
-        # ynoise
+        # ynoise (KNoise)
         idx_yn = idx & keep_yn
         path_yn = os.path.join(dir_yn, f"frame_{i:03d}.png")
         render_event_frame_png(x[idx_yn], y[idx_yn], p[idx_yn], SENSOR_W, SENSOR_H, path_yn)
@@ -455,36 +471,37 @@ def run():
 
         # stitch 1x5: raw, ts, ynoise, dwf, rcf
         out_stitch = os.path.join(dir_pinjie, f"frame_{i:03d}.png")
-        # stitch_1x5([path_raw, path_ts, path_yn, path_dwf, path_rcf], out_stitch)
         stitch_1x5_with_label(
-            paths_in_order=[
-                path_raw,
-                path_ts,
-                path_yn,
-                path_dwf,
-                path_rcf,
-            ],
-            labels=[
-                "Raw",
-                "BAF",
-                "KNoise",
-                "DWF",
-                "RCF",
-            ],
+            paths_in_order=[path_raw, path_ts, path_yn, path_dwf, path_rcf],
+            labels=["Raw", "BAF", "KNoise", "DWF", "RCF"],
             out_path=out_stitch,
         )
 
-    print("\n[OK] Visualization finished.")
-    print("AEDAT4 :", AEDAT4_PATH)
-    print("Keepmask matched:")
-    print("  DWF   :", km_dwf_path)
-    print("  BAF    :", km_ts_path)
-    print("  KNoise:", km_yn_path)
-    print("  RCF   :", km_rcf_path)
-    print("Output :", OUT_DIR)
-    print("RCF eta:", RCF_ETA, " (column from", RCF_ETA_LIST, ")")
-    print("Aligned length:", N_min)
+    print(f"[OK] {aedat4_path} -> {OUT_DIR}")
+
+
+# ============================================================
+# 6) 批量入口
+# ============================================================
+def run_all():
+    emlb_root = Path(EMLB_ROOT)
+    if not emlb_root.exists():
+        raise FileNotFoundError(f"EMLB_ROOT not found: {EMLB_ROOT}")
+
+    files = sorted(emlb_root.rglob("*.aedat4"))
+    if ONLY_SPLITS is not None:
+        only = set(ONLY_SPLITS)
+        files = [p for p in files if p.relative_to(emlb_root).parts[0] in only]
+
+    print(f"[SCAN] aedat4 files={len(files)} root={EMLB_ROOT}")
+    for i, p in enumerate(files, 1):
+        try:
+            process_one_file(str(p))
+        except Exception as e:
+            print(f"[FAIL] ({i}/{len(files)}) {p} | {type(e).__name__}: {e}")
+
+    print("[DONE] all files processed.")
 
 
 if __name__ == "__main__":
-    run()
+    run_all()

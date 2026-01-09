@@ -23,10 +23,10 @@ from rcf_fast.rcf_corev2 import rcf_process_bin
 # ============================================================
 # User configuration (edit here)
 # ============================================================
-DATA_ROOT = r"C:\Users\93084\Desktop\自己论文写作\2.降噪\RCF\data\emlb\day"  # day / night
-ND_FILTER = "ND00"                      # ND00 / ND04 / ND16 / ND64
+DATA_ROOT = r"C:\Users\93084\Desktop\自己论文写作\2.降噪\RCF\data\emlb\night"  # day / night
+ND_FILTER = "ND64"                      # ND00 / ND04 / ND16 / ND64
 BIN_MS = 33                             # 10ms slicing for RCF
-tag='day'
+tag='night'
 # If you want a quick dry-run:
 MAX_BINS_PER_FILE = 0                   # 0 = full file
 
@@ -68,6 +68,12 @@ def main():
     eta_list = cfg.eta_list
     n_eta = len(eta_list)
 
+    # -----------------------------
+    # NEW: global keep stats (overall keep.mean per eta)
+    # -----------------------------
+    total_events = 0
+    total_keep = np.zeros(n_eta, dtype=np.int64)
+
     # One global CSV for this ND
     out_csv = os.path.join(CSV_DIR, f"rcf_profile_{tag}_{ND_FILTER.lower()}.csv")
     header = ["scene", "file", "bin_idx", "n_events", "time_ms"] + [f"keep_rate_eta_{e:.2f}" for e in eta_list]
@@ -91,7 +97,7 @@ def main():
             keep_chunks: List[np.ndarray] = []  # each: (n_bin, n_eta) uint8
 
             def on_bin(events: dv.EventStore):
-                nonlocal bin_counter
+                nonlocal bin_counter, total_events, total_keep
                 if MAX_BINS_PER_FILE > 0 and bin_counter >= MAX_BINS_PER_FILE:
                     return
 
@@ -114,8 +120,17 @@ def main():
                 km = np.empty((n, n_eta), dtype=np.uint8)
                 for j, eta in enumerate(eta_list):
                     keep = res.keep_masks[eta]
-                    row.append(f"{float(keep.sum()) / max(1, n):.6f}")
+                    ksum = int(keep.sum())
+
+                    # per-bin keep rate to CSV
+                    row.append(f"{float(ksum) / max(1, n):.6f}")
                     km[:, j] = keep.astype(np.uint8)
+
+                    # NEW: accumulate global stats
+                    total_keep[j] += ksum
+
+                # NEW: total events
+                total_events += n
 
                 writer.writerow(row)
 
@@ -151,9 +166,22 @@ def main():
 
             print(f"  keepmask saved: {os.path.basename(out_npz)} | shape={keepmask.shape}")
 
+    # -----------------------------
+    # NEW: overall keep.mean summary
+    # -----------------------------
     print("-" * 110)
     print(f"[STEP4] CSV saved: {out_csv}")
     print(f"[STEP4] keepmask dir: {KEEP_DIR}")
+    print("-" * 110)
+
+    if total_events > 0:
+        keep_mean = total_keep.astype(np.float64) / float(total_events)
+        print(f"[STEP4] Overall keep.mean (all files, all bins): total_events={total_events}")
+        for eta, km in zip(eta_list, keep_mean):
+            print(f"  eta={eta:.2f} | keep.mean={km:.6f}")
+    else:
+        print("[STEP4] Overall keep.mean: total_events=0 (no events processed)")
+
     print("-" * 110)
 
 

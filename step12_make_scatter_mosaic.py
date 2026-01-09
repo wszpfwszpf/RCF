@@ -15,8 +15,8 @@ from PIL import Image
 # -------------------------------
 # 你只需要改这里
 # -------------------------------
-# CASE_DIR = 'data/DVcompare/On_set2_trail2'
-CASE_DIR = 'data/DVcompare/Off_set3_trail5'
+CASE_DIR = 'data/DVcompare/On_set2_trail2'
+# CASE_DIR = 'data/DVcompare/Off_set3_trail5'
 # ROWS = 1
 # COLS = 7
 ROWS = 2

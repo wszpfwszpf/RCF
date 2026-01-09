@@ -13,8 +13,8 @@ import rcf_fast.esr_core as esr_core
 # =========================
 # Config
 # =========================
-SPLIT = "day"                 # 只跑 day（你已确认）
-TARGET_ND = "ND00"            # 配置：目前只生成了 ND00 keepmask
+SPLIT = "night"                 # 只跑 day（你已确认）
+TARGET_ND = "ND64"            # 配置：目前只生成了 ND00 keepmask
 N_PER_PACKET = 30000          # 你已有切分
 SENSOR_W = 346
 SENSOR_H = 260

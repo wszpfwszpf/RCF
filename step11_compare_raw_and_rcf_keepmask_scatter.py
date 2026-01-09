@@ -27,9 +27,13 @@ rcParams["font.family"] = "Times New Roman"
 # 你只需要改这里的配置（不写命令行）
 # ------------------------------- #
 # DAT_PATH = os.path.join("data", "DV", "xxx.dat")   # TODO: 改成你的dat路径
-DAT_PATH = r'data/DV/Off_set3_trail5.dat'
+# DAT_PATH = r'data/DV/Off_set3_trail5.dat'
 # KEEPMASK_NPZ_PATH = os.path.join("data", "DV", "xxx_km.npz")  #
-KEEPMASK_NPZ_PATH = 'data/DV_rcf_full/Off_set3_trail5_keepmask_10ms.npz'
+# KEEPMASK_NPZ_PATH = 'data/DV_rcf_full/Off_set3_trail5_keepmask_10ms.npz'
+
+DAT_PATH = r"data/DV/On_set2_trail2.dat"
+KEEPMASK_NPZ_PATH = r"data/DV_rcf_full/On_set2_trail2_keepmask_10ms.npz"
+
 # 你会提供的起止时间（秒）
 T_START_S = 1.7   # TODO: 改成你的起始时间（秒）
 T_END_S = 3.7    # TODO: 改成你的结束时间（秒）
@@ -198,7 +202,7 @@ def main():
         plot_event_2d(
             ev_keep,
             y_aix=Y_AIX_FOR_PLOT,
-            title=f"η={eta}",
+            title=f"η={eta*2}",
             ylim=(ROI_X_MIN, ROI_X_MAX),
             save_path=out_png,
             show=False,
